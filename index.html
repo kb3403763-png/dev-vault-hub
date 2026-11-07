@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dev Resource Vault</title>
+<meta name="description" content="Curated open-source developer and security tools in one place.">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background:#0b1118; color:#e6edf3;
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .card { background:#121b25; border:1px solid #243242; }
+  .card:hover { border-color:#3d5873; }
+  .btn { background:#f2b84b; color:#1b1403; }
+  .btn:hover { filter:brightness(1.08); }
+  a:focus-visible, button:focus-visible { outline:2px solid #f2b84b; outline-offset:2px; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<header class="mx-auto max-w-6xl px-4 pt-12 pb-8">
+  <span class="inline-flex items-center gap-2 rounded-full border border-emerald-700 bg-emerald-950 px-3 py-1 text-xs text-emerald-300">
+    <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+    Status: Online
+  </span>
+  <h1 class="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">Dev Resource Vault</h1>
+  <p class="mt-3 max-w-xl text-slate-400">
+    Open-source developer and security tools, gathered in one place.
+  </p>
+</header>
+
+<main class="mx-auto max-w-6xl px-4 pb-16">
+  <p id="status-line" class="mb-4 text-sm text-slate-400" aria-live="polite"></p>
+  <section id="resource-grid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></section>
+</main>
+
+<footer class="mx-auto max-w-6xl px-4 pb-10 text-sm text-slate-500">
+  Disclosure: the "Access Tool" button opens a sponsored link in a new tab and may
+  earn this site a commission. Every tool listed is open source and also available
+  from its own page, linked as "Source" on each card.
+</footer>
+
+<script>
+  // Put your ad network direct link here. While it equals the Google
+  // placeholder below, no ad tab is opened.
+  const DIRECT_LINK = "https://asiafilm.org/4/87474f0bb5ed31d0c6355554a00fc6cf";
+
+  // The compiler (build.py) replaces the marked empty list on the next line
+  // with the real data. Do not edit that line.
+  const resources = [{"title": "theHarvester", "description": "Gathers emails, subdomains, hosts and open ports from public sources for OSINT.", "url": "https://github.com/laramies/theHarvester", "stars": 12000}, {"title": "Nuclei", "description": "Fast, template-based vulnerability scanner for web apps, networks and cloud.", "url": "https://github.com/projectdiscovery/nuclei", "stars": 22000}, {"title": "Trivy", "description": "Scans containers, repos and infrastructure code for vulnerabilities and misconfigurations.", "url": "https://github.com/aquasecurity/trivy", "stars": 25000}, {"title": "PayloadsAllTheThings", "description": "A reference list of payloads and bypasses for web application security testing.", "url": "https://github.com/swisskyrepo/PayloadsAllTheThings", "stars": 60000}, {"title": "OWASP Cheat Sheet Series", "description": "Concise, practical security guidance for developers on common application risks.", "url": "https://github.com/OWASP/CheatSheetSeries", "stars": 28000}, {"title": "Sherlock", "description": "Finds usernames across hundreds of social networks for OSINT research.", "url": "https://github.com/sherlock-project/sherlock", "stars": 60000}, {"title": "ScoutSuite", "description": "Multi-cloud security auditing tool for AWS, Azure and GCP configurations.", "url": "https://github.com/nccgroup/ScoutSuite", "stars": 7000}];
+
+  (function () {
+    "use strict";
+
+    var PLACEHOLDER_LINK = "https://google.com";
+    var grid = document.getElementById("resource-grid");
+    var statusLine = document.getElementById("status-line");
+
+    function isHttp(value) {
+      try {
+        var p = new URL(value);
+        return p.protocol === "https:" || p.protocol === "http:";
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function make(tag, className, text) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined && text !== null) node.textContent = String(text);
+      return node;
+    }
+
+    // Opens the ad link in a new tab, then sends this tab to the resource.
+    function accessTool(destination) {
+      if (!isHttp(destination)) return;
+      if (isHttp(DIRECT_LINK) && DIRECT_LINK !== PLACEHOLDER_LINK) {
+        try { window.open(DIRECT_LINK, "_blank", "noopener"); } catch (e) { /* ignore */ }
+      }
+      window.location.assign(destination);
+    }
+
+    function buildCard(item) {
+      var card = make("article", "card flex flex-col rounded-xl p-5 transition-colors");
+
+      var top = make("div", "flex items-start justify-between gap-3");
+      top.appendChild(make("h2", "break-words text-lg font-semibold", item.title));
+      var badge = item.stars
+        ? "\u2605 " + Number(item.stars).toLocaleString()
+        : (item.tag || "Open source");
+      top.appendChild(make("span",
+        "shrink-0 rounded-full bg-slate-800 px-2.5 py-1 text-xs text-amber-300", badge));
+      card.appendChild(top);
+
+      card.appendChild(make("p", "mt-3 flex-1 text-sm text-slate-400",
+        item.description || "No description provided."));
+
+      var row = make("div", "mt-5 flex items-center gap-4");
+      var btn = make("button",
+        "btn rounded-lg px-4 py-2.5 text-sm font-bold", "Access Tool");
+      btn.type = "button";
+      btn.addEventListener("click", function () { accessTool(item.url); });
+
+      var src = make("a", "text-sm text-slate-400 underline", "Source");
+      src.href = item.url;
+      src.target = "_blank";
+      src.rel = "noopener noreferrer";
+
+      row.appendChild(btn);
+      row.appendChild(src);
+      card.appendChild(row);
+      return card;
+    }
+
+    function render() {
+      var list = Array.isArray(resources) ? resources : [];
+      var valid = list.filter(function (r) {
+        return r && typeof r.title === "string" && isHttp(r.url);
+      });
+      if (valid.length === 0) {
+        statusLine.textContent = "No resources available.";
+        return;
+      }
+      var frag = document.createDocumentFragment();
+      valid.forEach(function (r) { frag.appendChild(buildCard(r)); });
+      grid.appendChild(frag);
+      statusLine.textContent = valid.length + " resources";
+    }
+
+    render();
+  })();
+</script>
+</body>
+</html>
